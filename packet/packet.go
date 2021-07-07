@@ -22,13 +22,27 @@
 
 package packet
 
-import "errors"
+import (
+	"errors"
+	log "github.com/sirupsen/logrus"
+)
 
 // The header protocol describes the format of the sampled header
 const (
-	headerProtocolEthernet uint32 = 1
-	headerProtocolIPv4     uint32 = 11
-	headerProtocolIPv6     uint32 = 12
+	headerProtocolEthernet   uint32 = 1
+	headerProtocolTokenbus   uint32 = 2
+	headerProtocolTokenring  uint32 = 3
+	headerProtocolFddi       uint32 = 4
+	headerProtocolFrameRelay uint32 = 5
+	headerProtocolX25        uint32 = 6
+	headerProtocolPpp        uint32 = 7
+	headerProtocolSmds       uint32 = 8
+	headerProtocolAal5       uint32 = 9
+	headerProtocolAal5Ip     uint32 = 10
+	headerProtocolIPv4       uint32 = 11
+	headerProtocolIPv6       uint32 = 12
+	headerProtocolMpls       uint32 = 13
+	headerProtocolPos        uint32 = 14
 )
 
 // Packet represents layer 2,3,4 available info
@@ -72,6 +86,7 @@ func (p *Packet) Decoder(data []byte, protocol uint32) (*Packet, error) {
 			return p, err
 		}
 	default:
+		log.Errorf("Unsupported sflow protocol header %v", protocol)
 		return p, errUnknownHeaderProtocol
 	}
 
@@ -119,6 +134,7 @@ func (p *Packet) decodeEthernetHeader() error {
 		}
 
 	default:
+		log.Errorf("Unsupported sflow protocol header %v", p.L2.EtherType)
 		return errUnknownEtherType
 	}
 

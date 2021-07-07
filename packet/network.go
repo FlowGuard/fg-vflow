@@ -24,6 +24,7 @@ package packet
 
 import (
 	"errors"
+	log "github.com/sirupsen/logrus"
 	"net"
 )
 
@@ -61,17 +62,10 @@ const (
 	// IPv6HLen is IPv6 header length size
 	IPv6HLen = 40
 
-	// IANAProtoICMP is IANA Internet Control Message number
-	IANAProtoICMP = 1
-
-	// IANAProtoTCP is IANA Transmission Control number
-	IANAProtoTCP = 6
-
-	// IANAProtoUDP is IANA User Datagram number
-	IANAProtoUDP = 17
-
-	// IANAProtoIPv6ICMP is IANA Internet Control Message number for IPv6
-	IANAProtoIPv6ICMP = 58
+	IANAProtoICMP     = 1  // IANAProtoICMP is IANA Internet Control Message number
+	IANAProtoTCP      = 6  // IANAProtoTCP is IANA Transmission Control number
+	IANAProtoUDP      = 17 // IANAProtoUDP is IANA User Datagram number
+	IANAProtoIPv6ICMP = 58 // IANAProtoIPv6ICMP is IANA Internet Control Message number for IPv6
 )
 
 var (
@@ -124,6 +118,7 @@ func (p *Packet) decodeNextLayer() error {
 		p.L4 = udp
 		len = 8
 	default:
+		log.Errorf("Unsupported IANA protocol %v for decoding", proto)
 		return errUnknownTransportLayer
 	}
 
