@@ -79,8 +79,8 @@ var (
 func (p *Packet) decodeNextLayer() error {
 
 	var (
-		proto int
-		len   int
+		proto     int
+		headerLen int
 	)
 
 	switch p.L3.(type) {
@@ -89,6 +89,7 @@ func (p *Packet) decodeNextLayer() error {
 	case IPv6Header:
 		proto = p.L3.(IPv6Header).NextHeader
 	default:
+		log.Errorf("Unknown L3 protocol %v", p.L3)
 		return errUnknownL3Protocol
 	}
 
@@ -96,33 +97,38 @@ func (p *Packet) decodeNextLayer() error {
 	case IANAProtoICMP, IANAProtoIPv6ICMP:
 		icmp, err := decodeICMP(p.data)
 		if err != nil {
+			log.Errorf("IanaProtoICMP header deserialization error %v", err)
 			return err
 		}
 
 		p.L4 = icmp
-		len = 4
+		headerLen = 4
 	case IANAProtoTCP:
 		tcp, err := decodeTCP(p.data)
 		if err != nil {
+			log.Errorf("IanaProtoTCP header deserialization error %v", err)
 			return err
 		}
 
 		p.L4 = tcp
-		len = 20
+		headerLen = 20
 	case IANAProtoUDP:
 		udp, err := decodeUDP(p.data)
 		if err != nil {
+			log.Errorf("IanaProtoUDP header deserialization error %v", err)
 			return err
 		}
 
 		p.L4 = udp
-		len = 8
+		headerLen = 8
 	default:
 		log.Errorf("Unsupported IANA protocol %v for decoding", proto)
-		return errUnknownTransportLayer
+
+		p.L4 = nil
+		headerLen = len(p.data) // Consume all data
 	}
 
-	p.data = p.data[len:]
+	p.data = p.data[headerLen:]
 
 	return nil
 }
