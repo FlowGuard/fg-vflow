@@ -22,7 +22,10 @@
 
 package packet
 
-import "errors"
+import (
+	"errors"
+	log "github.com/sirupsen/logrus"
+)
 
 // TCPHeader represents TCP header
 type TCPHeader struct {

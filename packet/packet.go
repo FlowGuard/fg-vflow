@@ -78,11 +78,13 @@ func (p *Packet) Decoder(data []byte, protocol uint32) (*Packet, error) {
 	case headerProtocolIPv4:
 		err = p.decodeIPv4Header()
 		if err != nil {
+			log.Error("Unable to decode IPv4 header")
 			return p, err
 		}
 	case headerProtocolIPv6:
 		err = p.decodeIPv6Header()
 		if err != nil {
+			log.Error("Unable to decode IPv6 header")
 			return p, err
 		}
 	default:
@@ -105,6 +107,7 @@ func (p *Packet) decodeEthernetHeader() error {
 
 	err = p.decodeEthernet()
 	if err != nil {
+		log.Error("Unable to decode Ethernet header")
 		return err
 	}
 
@@ -113,11 +116,13 @@ func (p *Packet) decodeEthernetHeader() error {
 
 		err = p.decodeIPv4Header()
 		if err != nil {
+			log.Error("Unable to decode IPv4 header")
 			return err
 		}
 
 		err = p.decodeNextLayer()
 		if err != nil {
+			log.Error("Unable to decode next layer")
 			return err
 		}
 
@@ -125,11 +130,13 @@ func (p *Packet) decodeEthernetHeader() error {
 
 		err = p.decodeIPv6Header()
 		if err != nil {
+			log.Error("Unable to decode IPv6 header")
 			return err
 		}
 
 		err = p.decodeNextLayer()
 		if err != nil {
+			log.Error("Unable to decode next layer header")
 			return err
 		}
 

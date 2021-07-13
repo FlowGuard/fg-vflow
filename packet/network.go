@@ -135,6 +135,7 @@ func (p *Packet) decodeNextLayer() error {
 
 func (p *Packet) decodeIPv6Header() error {
 	if len(p.data) < IPv6HLen {
+		log.Errorf("Wrong IPv6 heade length (%v)", len(p.data))
 		return errShortIPv6HeaderLength
 	}
 
@@ -161,6 +162,7 @@ func (p *Packet) decodeIPv6Header() error {
 
 func (p *Packet) decodeIPv4Header() error {
 	if len(p.data) < IPv4HLen {
+		log.Errorf("Wrong IPv4 header length (%v)", len(p.data))
 		return errShortIPv4HeaderLength
 	}
 

@@ -25,6 +25,7 @@ package sflow
 import (
 	"encoding/binary"
 	"errors"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
 	"time"
@@ -95,6 +96,7 @@ func NewSFDecoder(r io.ReadSeeker, f []uint32) SFDecoder {
 func (d *SFDecoder) SFDecode() (*SFDatagram, error) {
 	datagram, err := d.sfHeaderDecode()
 	if err != nil {
+		log.Error("Unable to decode sFlow header")
 		return nil, err
 	}
 
@@ -104,6 +106,7 @@ func (d *SFDecoder) SFDecode() (*SFDatagram, error) {
 	for i := uint32(0); i < datagram.SamplesNo; i++ {
 		sfTypeFormat, sfDataLength, err := d.getSampleInfo()
 		if err != nil {
+			log.Error("Unable to get sample info")
 			return nil, err
 		}
 
@@ -116,12 +119,14 @@ func (d *SFDecoder) SFDecode() (*SFDatagram, error) {
 		case DataFlowSample:
 			d, err := decodeFlowSample(d.reader)
 			if err != nil {
+				log.Error("Unable to decode flow sample")
 				return datagram, err
 			}
 			datagram.Samples = append(datagram.Samples, d)
 		case DataCounterSample:
 			d, err := decodeFlowCounter(d.reader)
 			if err != nil {
+				log.Error("Unable to decode flow counter")
 				return datagram, err
 			}
 			datagram.Counters = append(datagram.Counters, d)

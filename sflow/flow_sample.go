@@ -24,10 +24,10 @@ package sflow
 
 import (
 	"errors"
+	"github.com/VerizonDigital/vflow/packet"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
-
-	"github.com/VerizonDigital/vflow/packet"
 )
 
 const (
