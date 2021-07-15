@@ -24,7 +24,6 @@ package packet
 
 import (
 	"errors"
-	log "github.com/sirupsen/logrus"
 )
 
 // TCPHeader represents TCP header

@@ -182,36 +182,42 @@ func decodeFlowCounter(r io.ReadSeeker) (*CounterSample, error) {
 		case SFGenericInterfaceCounters:
 			d, err := decodeGenericIntCounters(r)
 			if err != nil {
+				log.Error("Unable to decode SFGenericInterfaceCounters flow counter")
 				return cs, err
 			}
 			cs.Records["GenInt"] = d
 		case SFEthernetInterfaceCounters:
 			d, err := decodeEthIntCounters(r)
 			if err != nil {
+				log.Error("Unable to decode SFEthernetInterfaceCounters flow counter")
 				return cs, err
 			}
 			cs.Records["EthInt"] = d
 		case SFTokenRingInterfaceCounters:
 			d, err := decodeTokenRingCounters(r)
 			if err != nil {
+				log.Error("Unable to decode SFTokenRingInterfaceCounters flow counter")
 				return cs, err
 			}
 			cs.Records["TRInt"] = d
 		case SF100BaseVGInterfaceCounters:
 			d, err := decodeVGCounters(r)
 			if err != nil {
+				log.Error("Unable to decode SF100BaseVGInterfaceCounters flow counter")
 				return cs, err
 			}
 			cs.Records["VGInt"] = d
 		case SFVLANCounters:
 			d, err := decodeVlanCounters(r)
 			if err != nil {
+				log.Error("Unable to decode SFVLANCounters flow counter")
 				return cs, err
 			}
 			cs.Records["Vlan"] = d
 		case SFProcessorCounters:
 			d, err := decodedProcessorCounters(r)
 			if err != nil {
+				log.Error("Unable to decode SFProcessorCounters flow counter")
 				return cs, err
 			}
 			cs.Records["Proc"] = d
