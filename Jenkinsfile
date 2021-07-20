@@ -5,6 +5,8 @@ pipeline {
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
     }
 
+    agent { dockerfile }
+
     stages {
 
         stage('Build & Test') {
