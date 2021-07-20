@@ -5,13 +5,13 @@ pipeline {
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
     }
 
-    agent { dockerfile }
+    agent { none }
 
     stages {
 
         stage('Build & Test') {
             steps {
-                agent { dockerfile true }
+                agent { dockerfile }
             }
         }
     }
