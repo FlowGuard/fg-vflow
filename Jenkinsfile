@@ -1,15 +1,11 @@
 
 pipeline {
 
-    agent {
-        none
-    }
+    agent none
 
     environment {
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
     }
-
-
 
     stages {
 
