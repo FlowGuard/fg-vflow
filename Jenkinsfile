@@ -1,6 +1,5 @@
 
 pipeline {
-
     agent {
         docker {
             image "golang"
@@ -25,7 +24,7 @@ pipeline {
                 script {
                     def scannerHome = tool 'Sonar Scanner 3.0.0.702';
                     withSonarQubeEnv {
-                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectVersion=${gitVersion}"
+                        sh "${scannerHome}/bin/sonar-scanner"
                     }
                 }
             }
