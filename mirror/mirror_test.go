@@ -122,17 +122,3 @@ func TestSetAddrs(t *testing.T) {
 		t.Error("expect dst 192.17.11.1, got", h.Src.String())
 	}
 }
-
-func TestSetLen(t *testing.T) {
-	ipv4RawHeader := NewIPv4HeaderTpl(17)
-	b := ipv4RawHeader.Marshal()
-	ipv4RawHeader.SetLen(b, 15)
-	h, err := ipv4.ParseHeader(b)
-	if err != nil {
-		t.Error("unexpected error", err)
-	}
-
-	if h.TotalLen != 35 {
-		t.Error("expect total len 35, got", h.TotalLen)
-	}
-}
