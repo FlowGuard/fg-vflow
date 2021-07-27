@@ -9,20 +9,31 @@ pipeline {
     }
 
     stages {
-
-        stage('Build docker image') {
+        stage("Docker build & publish") {
             steps {
-                echo 'Building image...'
-                sh 'docker build -t $DOCKER_REPOSITORY/fg-vflow:$BUILD_NUMBER .'
-                echo 'Build image complete'
+                script {
+                    dockerImage = docker.build "$DOCKER_REPOSITORY/fg_vflow"
+
+                    bn = env.BUILD_NUMBER
+                    gitVersion = sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
+                    currentBuild.displayName = "#${bn}:${gitVersion}"
+
+                    //dockerImage.push(gitVersion)
+                    if (env.BRANCH_NAME == "devel") {
+                        dockerImage.push("devel")
+                    }
+                }
             }
         }
 
-        stage ('Push docker image') {
-            steps {
-                echo 'Pushing docker image...'
-                sh 'docker push $DOCKER_REPOSITORY/fg-vflow:$BUILD_NUMBER'
-                echo 'Push image complete'
+        stage ("Devel deploy") {
+            when { branch "devel" }
+            salt(authtype: 'pam', clientInterface: local(arguments: 'node.rtbh', blockbuild: true, function: 'state.apply', jobPollTime: 6, target: 'node-1.bohdalec.test.fg', targettype: 'glob'), credentialsId: '3f36bac7-b50e-42f2-b977-19e352fbd3c7', saveFile: true, servername: 'https://salt.test.fg:8000/')
+            script {
+                env.WORKSPACE = pwd()
+                def output = readFile "${env.WORKSPACE}/saltOutput.json"
+                echo output
+                echo "Done..."
             }
         }
     }
