@@ -1,5 +1,6 @@
 
 pipeline {
+
     agent {
         docker {
             image "golang"
@@ -20,11 +21,13 @@ pipeline {
         }
 
         stage ("Code quality") {
+            echo("Checking code quality....")
             steps {
                 script {
                     def scannerHome = tool 'Sonar Scanner 3.0.0.702';
                     withSonarQubeEnv {
-                        sh "${scannerHome}/bin/sonar-scanner"
+                        gitVersion = sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
+                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectVersion=${gitVersion}"
                     }
                 }
             }
