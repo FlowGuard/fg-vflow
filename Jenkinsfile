@@ -10,15 +10,19 @@ pipeline {
 
     stages {
         stage ("Unit testing") {
-            echo "Unit testing..."
-            sh "go test -v ./... -timeout 1m"
+            steps {
+                echo "Unit testing..."
+                sh "go test -v ./... -timeout 1m"
+            }
         }
 
         stage ("Code quality") {
-            script {
-                def scannerHome = tool 'Sonar Scanner 3.0.0.702';
-                withSonarQubeEnv {
-                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectVersion=${gitVersion}"
+            steps {
+                script {
+                    def scannerHome = tool 'Sonar Scanner 3.0.0.702';
+                    withSonarQubeEnv {
+                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectVersion=${gitVersion}"
+                    }
                 }
             }
         }
@@ -42,20 +46,22 @@ pipeline {
         }
 
         stage ("Devel deploy") {
-            when { 
-                branch "devel" 
-            }
-            // salt(
-            //     authtype: 'pam', 
-            //     clientInterface: local(arguments: 'node.rtbh', blockbuild: true, function: 'state.apply', jobPollTime: 6, target: 'node-1.bohdalec.test.fg', targettype: 'glob'),
-            //     credentialsId: '3f36bac7-b50e-42f2-b977-19e352fbd3c7', 
-            //     saveFile: true, 
-            //     servername: 'https://salt.test.fg:8000/')
-            script {
-                env.WORKSPACE = pwd()
-                def output = readFile "${env.WORKSPACE}/saltOutput.json"
-                echo output
-                echo "Done..."
+            steps {
+                when { 
+                    branch "devel" 
+                }
+                // salt(
+                //     authtype: 'pam', 
+                //     clientInterface: local(arguments: 'node.rtbh', blockbuild: true, function: 'state.apply', jobPollTime: 6, target: 'node-1.bohdalec.test.fg', targettype: 'glob'),
+                //     credentialsId: '3f36bac7-b50e-42f2-b977-19e352fbd3c7', 
+                //     saveFile: true, 
+                //     servername: 'https://salt.test.fg:8000/')
+                script {
+                    env.WORKSPACE = pwd()
+                    def output = readFile "${env.WORKSPACE}/saltOutput.json"
+                    echo output
+                    echo "Done..."
+                }
             }
         }
     }
