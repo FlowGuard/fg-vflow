@@ -19,9 +19,8 @@ pipeline {
             stages {
                 stage ("Unit testing") {
                     steps {
-                        echo "TEST $GIT_VERSION"
                         echo "Unit testing..."
-                        //sh "go test -v ./... -timeout 1m"
+                        sh "go test -v ./... -timeout 1m"
                     }
                 }
             }
@@ -48,7 +47,7 @@ pipeline {
                     bn = env.BUILD_NUMBER
                     currentBuild.displayName = "#${bn}:$GIT_VERSION"
 
-                    //dockerImage.push(gitVersion)
+                    dockerImage.push(gitVersion)
                     if (env.BRANCH_NAME == "devel") {
                         dockerImage.push("devel")
                     }
