@@ -1,7 +1,11 @@
 
 pipeline {
 
-    agent any
+    agent {
+        docker {
+            image "golang"
+        }
+    }
 
     environment {
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
