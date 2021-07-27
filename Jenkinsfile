@@ -4,13 +4,12 @@ pipeline {
     environment {
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
         DOCKER_REPOSITORY = "docker.fg"
-
-        gitVersion=sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
+        GIT_VERSION=sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
     }
 
     stages {
 
-        stage ("Preparing container for golang building... ")  {
+        stage ("Preparing container for golang")  {
             agent {
                 docker {
                     image "golang"
@@ -20,6 +19,7 @@ pipeline {
             stages {
                 stage ("Unit testing") {
                     steps {
+                        echo "TEST $GIT_VERSION"
                         echo "Unit testing..."
                         //sh "go test -v ./... -timeout 1m"
                     }
@@ -33,7 +33,7 @@ pipeline {
                 script {
                     def scannerHome = tool 'Sonar Scanner 3.0.0.702';
                     withSonarQubeEnv {
-                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectVersion=${gitVersion}"
+                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectVersion=$GIT_VERSION"
                     }
                 }
             }
@@ -46,7 +46,7 @@ pipeline {
                     dockerImage = docker.build "$DOCKER_REPOSITORY/fg_vflow"
 
                     bn = env.BUILD_NUMBER
-                    currentBuild.displayName = "#${bn}:${gitVersion}"
+                    currentBuild.displayName = "#${bn}:$GIT_VERSION"
 
                     //dockerImage.push(gitVersion)
                     if (env.BRANCH_NAME == "devel") {
