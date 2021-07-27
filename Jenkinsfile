@@ -12,17 +12,17 @@ pipeline {
 
         stage('Build docker image') {
             steps {
-                echo "Building image..."
-                sh "docker build -t $DOCKER_REPOSITORY/fg-vflow:$BUILD_NUMBER ."
-                echo "Build image complete"
+                echo 'Building image...'
+                sh 'docker build -t $DOCKER_REPOSITORY/fg-vflow:$BUILD_NUMBER .'
+                echo 'Build image complete'
             }
         }
 
         stage ('Push docker image') {
             steps {
-                echo "Pushing docker image..."
-                sh "docker push $DOCKER_REPOSITORY/fg-vflow:$BUILD_NUMBER"
-                echo "Push image complete"
+                echo 'Pushing docker image...'
+                sh 'docker push $DOCKER_REPOSITORY/fg-vflow:$BUILD_NUMBER'
+                echo 'Push image complete'
             }
         }
     }
