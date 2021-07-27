@@ -4,7 +4,7 @@ pipeline {
     environment {
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
         DOCKER_REPOSITORY = "docker.fg"
-        
+
         gitVersion=sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
     }
 
@@ -33,7 +33,6 @@ pipeline {
                 script {
                     def scannerHome = tool 'Sonar Scanner 3.0.0.702';
                     withSonarQubeEnv {
-                        gitVersion = sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
                         sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectVersion=${gitVersion}"
                     }
                 }
@@ -47,7 +46,6 @@ pipeline {
                     dockerImage = docker.build "$DOCKER_REPOSITORY/fg_vflow"
 
                     bn = env.BUILD_NUMBER
-                    gitVersion = sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
                     currentBuild.displayName = "#${bn}:${gitVersion}"
 
                     //dockerImage.push(gitVersion)
