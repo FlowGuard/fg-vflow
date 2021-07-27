@@ -21,8 +21,8 @@ pipeline {
         }
 
         stage ("Code quality") {
-            echo("Checking code quality....")
             steps {
+                 echo("Checking code quality....")
                 script {
                     def scannerHome = tool 'Sonar Scanner 3.0.0.702';
                     withSonarQubeEnv {
