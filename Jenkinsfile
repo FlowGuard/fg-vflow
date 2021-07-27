@@ -1,22 +1,27 @@
 
 pipeline {
-
-    agent {
-        docker {
-            image "golang"
-        }
-    }
-
+    agent any
     environment {
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
         DOCKER_REPOSITORY = "docker.fg"
     }
 
     stages {
-        stage ("Unit testing") {
-            steps {
-                echo "Unit testing..."
-                //sh "go test -v ./... -timeout 1m"
+
+        stage ("Preparing container for golang building... ")  {
+            agent {
+                docker {
+                    image "golang"
+                }
+            }
+
+            stages {
+                stage ("Unit testing") {
+                    steps {
+                        echo "Unit testing..."
+                        //sh "go test -v ./... -timeout 1m"
+                    }
+                }
             }
         }
 
