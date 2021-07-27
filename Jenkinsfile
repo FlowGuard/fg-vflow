@@ -15,7 +15,12 @@ pipeline {
         }
 
         stage ("Code quality") {
-            echo "TODO... "
+            script {
+                def scannerHome = tool 'Sonar Scanner 3.0.0.702';
+                withSonarQubeEnv {
+                    sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectVersion=${gitVersion}"
+                }
+            }
         }
 
 
