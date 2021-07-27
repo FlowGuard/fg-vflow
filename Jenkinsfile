@@ -4,6 +4,8 @@ pipeline {
     environment {
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
         DOCKER_REPOSITORY = "docker.fg"
+        
+        gitVersion=sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
     }
 
     stages {
@@ -27,7 +29,7 @@ pipeline {
 
         stage ("Code quality") {
             steps {
-                 echo("Checking code quality....")
+                echo("Checking code quality....")
                 script {
                     def scannerHome = tool 'Sonar Scanner 3.0.0.702';
                     withSonarQubeEnv {
