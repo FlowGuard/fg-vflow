@@ -1,18 +1,28 @@
 
 pipeline {
 
-    agent none
+    agent any
 
     environment {
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
+        DOCKER_REPOSITORY = "docker.fg"
     }
 
     stages {
 
-        stage('Build & Test') {
-            agent { dockerfile true}
+        stage('Build docker image') {
             steps {
-                echo "Building via docker"
+                echo "Building image..."
+                sh "docker build -t $DOCKER_REPOSITORY/fg-vflow:$BUILD_NUMBER"
+                echo "Build image complete"
+            }
+        }
+
+        stage ('Push docker image') {
+            steps {
+                echo "Pushing docker image..."
+                sh "docker push $DOCKER_REPOSITORY/fg-vflow:$BUILD_NUMBER"
+                echo "Push image complete"
             }
         }
     }
