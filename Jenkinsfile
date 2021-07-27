@@ -16,7 +16,7 @@ pipeline {
         stage ("Unit testing") {
             steps {
                 echo "Unit testing..."
-                sh "go test -v ./... -timeout 1m"
+                //sh "go test -v ./... -timeout 1m"
             }
         }
 
@@ -54,12 +54,11 @@ pipeline {
                 when { 
                     branch "devel" 
                 }
-                // salt(
-                //     authtype: 'pam', 
-                //     clientInterface: local(arguments: 'node.rtbh', blockbuild: true, function: 'state.apply', jobPollTime: 6, target: 'node-1.bohdalec.test.fg', targettype: 'glob'),
-                //     credentialsId: '3f36bac7-b50e-42f2-b977-19e352fbd3c7', 
-                //     saveFile: true, 
-                //     servername: 'https://salt.test.fg:8000/')
+                 salt(authtype: 'pam', 
+                     clientInterface: local(arguments: 'node.rtbh', blockbuild: true, function: 'state.apply', jobPollTime: 6, target: 'node-1.bohdalec.test.fg', targettype: 'glob'),
+                     credentialsId: '3f36bac7-b50e-42f2-b977-19e352fbd3c7', 
+                     saveFile: true, 
+                     servername: 'https://salt.test.fg:8000/')
                 script {
                     env.WORKSPACE = pwd()
                     def output = readFile "${env.WORKSPACE}/saltOutput.json"
