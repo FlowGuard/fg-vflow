@@ -10,9 +10,7 @@ pipeline {
     stages {
 
         stage ("Preparing container for golang")  {
-            agent {
-                dockerfile: true
-            }
+            agent { dockerfile true}
 
             stages {
                 stage ("Unit testing") {
