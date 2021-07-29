@@ -49,7 +49,7 @@ pipeline {
                     bn = env.BUILD_NUMBER
                     currentBuild.displayName = "#${bn}:$GIT_VERSION"
 
-                    dockerImage.push(gitVersion)
+                    dockerImage.push($GIT_VERSION)
                     if (env.BRANCH_NAME == "devel") {
                         dockerImage.push("devel")
                     }
