@@ -21,7 +21,7 @@ pipeline {
                     steps {
                         echo "Unit testing..."
                         sh "go build ./..."
-                        sh "go compile ./..."
+                        sh "go install ./..."
                         sh "go test -v ./... -timeout 1m"
                     }
                 }
