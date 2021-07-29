@@ -10,12 +10,18 @@ pipeline {
     stages {
 
         stage ("Preparing container for golang")  {
-            agent { dockerfile true}
+            agent {
+                docker {
+                    image "golang"
+                }
+            }
 
             stages {
                 stage ("Unit testing") {
                     steps {
                         echo "Unit testing..."
+                        sh "go build ./..."
+                        sh "go compile ./..."
                         sh "go test -v ./... -timeout 1m"
                     }
                 }
