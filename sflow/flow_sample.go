@@ -24,10 +24,10 @@ package sflow
 
 import (
 	"errors"
+	"github.com/VerizonDigital/vflow/packet"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
-
-	"github.com/VerizonDigital/vflow/packet"
 )
 
 const (
@@ -86,32 +86,39 @@ func (fs *FlowSample) unmarshal(r io.ReadSeeker) error {
 	var err error
 
 	if err = read(r, &fs.SequenceNo); err != nil {
+		log.Error("Unable to read SequenceNo")
 		return err
 	}
 
 	if err = read(r, &fs.SourceID); err != nil {
+		log.Error("Unable to read SourceID")
 		return err
 	}
 
 	r.Seek(3, 1) // skip counter sample decoding
 
 	if err = read(r, &fs.SamplingRate); err != nil {
+		log.Error("Unable to read SamplingRate")
 		return err
 	}
 
 	if err = read(r, &fs.SamplePool); err != nil {
+		log.Error("Unable to read SamplePool")
 		return err
 	}
 
 	if err = read(r, &fs.Drops); err != nil {
+		log.Error("Unable to read Drops")
 		return err
 	}
 
 	if err = read(r, &fs.Input); err != nil {
+		log.Error("Unable to read Input")
 		return err
 	}
 
 	if err = read(r, &fs.Output); err != nil {
+		log.Error("Unable to read Output")
 		return err
 	}
 
@@ -124,22 +131,27 @@ func (sh *SampledHeader) unmarshal(r io.Reader) error {
 	var err error
 
 	if err = read(r, &sh.Protocol); err != nil {
+		log.Error("Unable to read Protocol")
 		return err
 	}
 
 	if err = read(r, &sh.FrameLength); err != nil {
+		log.Error("Unable to read FrameLength")
 		return err
 	}
 
 	if err = read(r, &sh.Stripped); err != nil {
+		log.Error("Unable to read Stripped")
 		return err
 	}
 
 	if err = read(r, &sh.HeaderLength); err != nil {
+		log.Error("Unable to read HeaderLength")
 		return err
 	}
 
 	if sh.HeaderLength > 1500 {
+		log.Error("Header length exeeds limit (1500)")
 		return errMaxOutEthernetLength
 	}
 
@@ -151,6 +163,7 @@ func (sh *SampledHeader) unmarshal(r io.Reader) error {
 
 	sh.Header = make([]byte, sh.HeaderLength+tmp)
 	if _, err = r.Read(sh.Header); err != nil {
+		log.Error("Unable to read packet header")
 		return err
 	}
 
@@ -163,18 +176,23 @@ func (es *ExtSwitchData) unmarshal(r io.Reader) error {
 	var err error
 
 	if err = read(r, &es.SrcVlan); err != nil {
+		log.Error("Unable to read SrcVlan")
 		return err
 	}
 
 	if err = read(r, &es.SrcPriority); err != nil {
+		log.Error("Unable to read SrcPriority")
 		return err
 	}
 
 	if err = read(r, &es.DstVlan); err != nil {
+		log.Error("Unable to read DstVlan")
 		return err
 	}
 
-	err = read(r, &es.SrcPriority)
+	if err = read(r, &es.DstPriority); err != nil {
+		log.Error("Unable to read DstPriority")
+	}
 
 	return err
 }
@@ -184,15 +202,19 @@ func (er *ExtRouterData) unmarshal(r io.Reader, l uint32) error {
 
 	buff := make([]byte, l-8)
 	if err = read(r, &buff); err != nil {
+		log.Error("Unable to read to buffer")
 		return err
 	}
 	er.NextHop = buff[4:]
 
 	if err = read(r, &er.SrcMask); err != nil {
+		log.Error("Unable to read SrcMask")
 		return err
 	}
 
-	err = read(r, &er.DstMask)
+	if err = read(r, &er.DstMask); err != nil {
+		log.Error("Unable to read DstMask")
+	}
 
 	return err
 }
@@ -206,6 +228,7 @@ func decodeFlowSample(r io.ReadSeeker) (*FlowSample, error) {
 	)
 
 	if err = fs.unmarshal(r); err != nil {
+		log.Error("Unable to read decode flow sample")
 		return nil, err
 	}
 
@@ -213,9 +236,11 @@ func decodeFlowSample(r io.ReadSeeker) (*FlowSample, error) {
 
 	for i := uint32(0); i < fs.RecordsNo; i++ {
 		if err = read(r, &rTypeFormat); err != nil {
+			log.Error("Unable to read record type format")
 			return nil, err
 		}
 		if err = read(r, &rTypeLength); err != nil {
+			log.Error("Unable to read record type length")
 			return nil, err
 		}
 
@@ -223,12 +248,14 @@ func decodeFlowSample(r io.ReadSeeker) (*FlowSample, error) {
 		case SFDataRawHeader:
 			d, err := decodeSampledHeader(r)
 			if err != nil {
+				log.Error("Unable to decode SFDataRawHeader")
 				return fs, err
 			}
 			fs.Records["RawHeader"] = d
 		case SFDataExtSwitch:
 			d, err := decodeExtSwitchData(r)
 			if err != nil {
+				log.Error("Unable to decode SFDataExtSwitch")
 				return fs, err
 			}
 
@@ -236,6 +263,7 @@ func decodeFlowSample(r io.ReadSeeker) (*FlowSample, error) {
 		case SFDataExtRouter:
 			d, err := decodeExtRouterData(r, rTypeLength)
 			if err != nil {
+				log.Error("Unable to decode SFDataExtRouter")
 				return fs, err
 			}
 
