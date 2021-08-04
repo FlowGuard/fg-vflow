@@ -22,7 +22,9 @@
 
 package packet
 
-import "errors"
+import (
+	"errors"
+)
 
 // TCPHeader represents TCP header
 type TCPHeader struct {

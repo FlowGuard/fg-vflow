@@ -25,6 +25,7 @@ package packet
 import (
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 // Datalink represents layer two IEEE 802.11
@@ -75,6 +76,7 @@ func (p *Packet) decodeEthernet() error {
 
 	d, err = decodeIEEE802(p.data)
 	if err != nil {
+		log.Error("Unable to decode IEEE802")
 		return err
 	}
 
@@ -85,6 +87,7 @@ func (p *Packet) decodeEthernet() error {
 
 		d, err = decodeIEEE802(p.data)
 		if err != nil {
+			log.Error("Unable to decode IEEE802")
 			return err
 		}
 		d.Vlan = vlan
@@ -100,6 +103,7 @@ func decodeIEEE802(b []byte) (Datalink, error) {
 	var d Datalink
 
 	if len(b) < 14 {
+		log.Errorf("Wrong IEEE802 length (%v)", len(b))
 		return d, errShortEthernetLength
 	}
 

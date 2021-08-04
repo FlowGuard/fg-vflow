@@ -24,6 +24,7 @@ package packet
 
 import (
 	"errors"
+	log "github.com/sirupsen/logrus"
 	"net"
 )
 
@@ -61,17 +62,10 @@ const (
 	// IPv6HLen is IPv6 header length size
 	IPv6HLen = 40
 
-	// IANAProtoICMP is IANA Internet Control Message number
-	IANAProtoICMP = 1
-
-	// IANAProtoTCP is IANA Transmission Control number
-	IANAProtoTCP = 6
-
-	// IANAProtoUDP is IANA User Datagram number
-	IANAProtoUDP = 17
-
-	// IANAProtoIPv6ICMP is IANA Internet Control Message number for IPv6
-	IANAProtoIPv6ICMP = 58
+	IANAProtoICMP     = 1  // IANAProtoICMP is IANA Internet Control Message number
+	IANAProtoTCP      = 6  // IANAProtoTCP is IANA Transmission Control number
+	IANAProtoUDP      = 17 // IANAProtoUDP is IANA User Datagram number
+	IANAProtoIPv6ICMP = 58 // IANAProtoIPv6ICMP is IANA Internet Control Message number for IPv6
 )
 
 var (
@@ -85,8 +79,8 @@ var (
 func (p *Packet) decodeNextLayer() error {
 
 	var (
-		proto int
-		len   int
+		proto     int
+		headerLen int
 	)
 
 	switch p.L3.(type) {
@@ -95,6 +89,7 @@ func (p *Packet) decodeNextLayer() error {
 	case IPv6Header:
 		proto = p.L3.(IPv6Header).NextHeader
 	default:
+		log.Errorf("Unknown L3 protocol %v", p.L3)
 		return errUnknownL3Protocol
 	}
 
@@ -102,38 +97,45 @@ func (p *Packet) decodeNextLayer() error {
 	case IANAProtoICMP, IANAProtoIPv6ICMP:
 		icmp, err := decodeICMP(p.data)
 		if err != nil {
+			log.Errorf("IanaProtoICMP header deserialization error %v", err)
 			return err
 		}
 
 		p.L4 = icmp
-		len = 4
+		headerLen = 4
 	case IANAProtoTCP:
 		tcp, err := decodeTCP(p.data)
 		if err != nil {
+			log.Errorf("IanaProtoTCP header deserialization error %v", err)
 			return err
 		}
 
 		p.L4 = tcp
-		len = 20
+		headerLen = 20
 	case IANAProtoUDP:
 		udp, err := decodeUDP(p.data)
 		if err != nil {
+			log.Errorf("IanaProtoUDP header deserialization error %v", err)
 			return err
 		}
 
 		p.L4 = udp
-		len = 8
+		headerLen = 8
 	default:
-		return errUnknownTransportLayer
+		log.Errorf("Unsupported IANA protocol %v for decoding", proto)
+
+		p.L4 = nil
+		headerLen = len(p.data) // Consume all data
 	}
 
-	p.data = p.data[len:]
+	p.data = p.data[headerLen:]
 
 	return nil
 }
 
 func (p *Packet) decodeIPv6Header() error {
 	if len(p.data) < IPv6HLen {
+		log.Errorf("Wrong IPv6 heade length (%v)", len(p.data))
 		return errShortIPv6HeaderLength
 	}
 
@@ -160,6 +162,7 @@ func (p *Packet) decodeIPv6Header() error {
 
 func (p *Packet) decodeIPv4Header() error {
 	if len(p.data) < IPv4HLen {
+		log.Errorf("Wrong IPv4 header length (%v)", len(p.data))
 		return errShortIPv4HeaderLength
 	}
 
