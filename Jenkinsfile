@@ -25,14 +25,12 @@ pipeline {
     }
 
     stages {
-        stages {
-            stage ("Unit testing") {
-                steps {
-                    echo "Unit testing..."
-                    sh "go build ./..."
-                    sh "go install ./..."
-                    sh "go test -v ./... -timeout 1m"
-                }
+        stage ("Unit testing") {
+            steps {
+                echo "Unit testing..."
+                sh "go build ./..."
+                sh "go install ./..."
+                sh "go test -v ./... -timeout 1m"
             }
         }
 
