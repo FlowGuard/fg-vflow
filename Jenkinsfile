@@ -20,6 +20,20 @@ pipeline {
       - sleep
       args:
       - 99d
+      volumeMounts:
+      - name: docker-sock
+        mountPath: /var/run/docker.sock
+      - name: docker-config
+        mountPath: /etc/docker
+    volumes:
+    - name: docker-sock
+      hostPath:
+        path: /var/run/docker.sock
+        type: Socket
+    - name: docker-config
+      hostPath:
+        path: /etc/docker
+        type: Directory
   '''
       }
     }
