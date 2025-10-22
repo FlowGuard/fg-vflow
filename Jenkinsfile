@@ -16,6 +16,9 @@ pipeline {
     - name: docker
       image: docker:20.10.13
       imagePullPolicy: Always
+      securityContext:
+        privileged: true
+        runAsUser: 0
       command:
       - sleep
       args:
