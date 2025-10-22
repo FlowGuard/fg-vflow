@@ -13,6 +13,13 @@ pipeline {
       - sleep
       args:
       - 99d
+    - name: docker
+      image: docker:20.10.13
+      imagePullPolicy: Always
+      command:
+      - sleep
+      args:
+      - 99d
   '''
       }
     }
@@ -58,15 +65,17 @@ pipeline {
 
         stage("Docker build & publish") {
             steps {
-                script {
-                    dockerImage = docker.build "$DOCKER_REPOSITORY/fg_vflow"
+                container('docker') {
+                    script {
+                        dockerImage = docker.build "$DOCKER_REPOSITORY/fg_vflow"
 
-                    bn = env.BUILD_NUMBER
-                    currentBuild.displayName = "#${bn}:${gitVersion}"
-                    if (env.BRANCH_NAME == "devel") {
-                        dockerImage.push("devel")
-                    } else {
-                        dockerImage.push(gitVersion)
+                        bn = env.BUILD_NUMBER
+                        currentBuild.displayName = "#${bn}:${gitVersion}"
+                        if (env.BRANCH_NAME == "devel") {
+                            dockerImage.push("devel")
+                        } else {
+                            dockerImage.push(gitVersion)
+                        }
                     }
                 }
             }
