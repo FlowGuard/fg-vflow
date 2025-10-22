@@ -7,7 +7,7 @@ pipeline {
   spec:
     containers:
     - name: golang
-      image: golang:1.15.3-buster
+      image: golang:1.16.15
       imagePullPolicy: Always
       command:
       - sleep
