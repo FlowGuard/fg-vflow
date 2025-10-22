@@ -32,7 +32,7 @@ pipeline {
             steps {
                 script {
                         bn = env.BUILD_NUMBER
-                        sh "git config --global --add safe.directory"
+                        sh "git config --global --add safe.directory '*'"
                         gitVersion = sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
                         currentBuild.displayName = "#${bn}:${gitVersion}"
                 }
