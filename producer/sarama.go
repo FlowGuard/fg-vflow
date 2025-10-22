@@ -32,6 +32,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+        "encoding/json"
 
 	"github.com/Shopify/sarama"
 	yaml "gopkg.in/yaml.v2"
@@ -147,6 +148,22 @@ func (k *KafkaSarama) inputMsg(topic string, mCh chan []byte, ec *uint64) {
 		if !ok {
 			break
 		}
+
+		var dataMap map[string]interface{}
+                err := json.Unmarshal(msg, &dataMap)
+                if err != nil {
+                    // chyba
+                }		
+                colTimeValue, ok := dataMap["ColTime"]
+                if !ok {
+                    // chyba
+                }		
+		colTimeFloat, ok := colTimeValue.(float64)
+                if !ok {
+                    // chyba
+                }
+                timestampSecs := uint64(colTimeFloat)
+                timestampMillis := int64(timestampSecs) * 1000
 
 		select {
 		case k.producer.Input() <- &sarama.ProducerMessage{
