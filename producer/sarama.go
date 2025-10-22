@@ -164,14 +164,15 @@ func (k *KafkaSarama) inputMsg(topic string, mCh chan []byte, ec *uint64) {
                 }
                 timestampSecs := uint64(colTimeFloat)
                 timestampMillis := int64(timestampSecs) * 1000
-	
+                tssec := timestampMillis / 1000
+                tsnsec := (timestampMillis % 1000) * 1000000	
 		k.logger.Printf("!!!!!!!!: ColTime: %d\n",timestampMillis)
 
 		select {
 		case k.producer.Input() <- &sarama.ProducerMessage{
 			Topic: topic,
 			Value: sarama.ByteEncoder(msg),
-			Timestamp: time.Unix(0, timestampMillis*int64(time.Millisecond)),
+			Timestamp: time.Unix(tssec, tsnsec),
 		}:
 		case err := <-k.producer.Errors():
 			k.logger.Println(err)
