@@ -166,7 +166,7 @@ func (k *KafkaSarama) inputMsg(topic string, mCh chan []byte, ec *uint64) {
                 timestampMillis := int64(timestampSecs) * 1000
                 tssec := timestampMillis / 1000
                 tsnsec := (timestampMillis % 1000) * 1000000	
-		k.logger.Printf("!!!!!!!!: ColTime: %d\n",timestampMillis)
+		k.logger.Printf("!!!!!!!!: ColTime: %d\n , %v",timestampMillis,time.Unix(tssec, tsnsec))
 
 		select {
 		case k.producer.Input() <- &sarama.ProducerMessage{
