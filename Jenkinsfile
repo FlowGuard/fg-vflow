@@ -16,16 +16,26 @@ pipeline {
   '''
       }
     }
+    
+    options {
+        ansiColor('xterm')
+    }
 
     environment {
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
         DOCKER_REPOSITORY = "docker.fg"
-        GIT_VERSION=sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
+      //  GIT_VERSION=sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
     }
 
     stages {
-        stage ("Unit testing") {
+        stage ("Building and testing") {
             steps {
+                script {
+                        bn = env.BUILD_NUMBER
+                        sh "git config --global --add safe.directory"
+                        gitVersion = sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
+                        currentBuild.displayName = "#${bn}:${gitVersion}"
+                }
                 echo "Unit testing..."
                 sh "go build ./..."
                 sh "go install ./..."
@@ -39,7 +49,7 @@ pipeline {
                 script {
                     def scannerHome = tool 'Sonar Scanner 3.0.0.702';
                     withSonarQubeEnv {
-                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectVersion=$GIT_VERSION"
+                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectVersion=${gitVersion}"
                     }
                 }
             }
@@ -52,11 +62,11 @@ pipeline {
                     dockerImage = docker.build "$DOCKER_REPOSITORY/fg_vflow"
 
                     bn = env.BUILD_NUMBER
-                    currentBuild.displayName = "#${bn}:$GIT_VERSION"
-
-                    dockerImage.push("$GIT_VERSION")
+                    currentBuild.displayName = "#${bn}:${gitVersion}"
                     if (env.BRANCH_NAME == "devel") {
                         dockerImage.push("devel")
+                    } else {
+                        dockerImage.push(gitVersion)
                     }
                 }
             }
