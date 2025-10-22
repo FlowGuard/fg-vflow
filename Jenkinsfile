@@ -1,4 +1,3 @@
-
 pipeline {
     agent {
       kubernetes {
@@ -8,7 +7,7 @@ pipeline {
   spec:
     containers:
     - name: golang
-      image: golang
+      image: golang:1.25.3-bookworm
       imagePullPolicy: Always
       command:
       - sleep
