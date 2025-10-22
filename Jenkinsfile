@@ -36,7 +36,6 @@ pipeline {
     - name: docker-config
       hostPath:
         path: /etc/docker
-        type: Directory
   '''
       }
     }
