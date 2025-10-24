@@ -165,18 +165,16 @@ func (k *KafkaSarama) inputMsg(topic string, mCh chan []byte, ec *uint64) {
 		    k.logger.Printf("The value ColTime cannot be converted to float64") 	
                     continue
                 }
-                timestampSecs := uint64(colTimeFloat)
-                timestampMillis := int64(timestampSecs) * 1000
-                tssec := timestampMillis / 1000
-                tsnsec := (timestampMillis % 1000) * 1000000	
-		//k.logger.Printf("!!!!!!!!: ColTime: %d\n , %v",timestampMillis,time.Unix(tssec, tsnsec))
-                k.logger.Printf("!!!!!!!!: ColTime: %d\n , %v",timestampMillis,time.Unix(0, timestampMillis*int64(time.Millisecond)))
+                ts_s := int64(colTimeFloat)
+                ts_ms := ts_s * 1000
+                ts_ns := (ts_ms % 1000) * 1000000
+		k.logger.Printf("!!!!!!!!: ColTime: %d\n , %v",ts_ms,time.Unix(ts_s, ts_ns))
 
 		select {
 		case k.producer.Input() <- &sarama.ProducerMessage{
 			Topic: topic,
 			Value: sarama.ByteEncoder(msg),
-			Timestamp: time.Unix(tssec, tsnsec),
+			Timestamp: time.Unix(ts_s, ts_ns),
 		}:
 		case err := <-k.producer.Errors():
 			k.logger.Println(err)

@@ -65,19 +65,6 @@ pipeline {
             }
         }
 
-//        stage ("Code quality") {
-//            steps {
-//                echo("Checking code quality....")
-//                script {
-//                    def scannerHome = tool 'Sonar Scanner 3.0.0.702';
-//                    withSonarQubeEnv {
-//                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectVersion=${gitVersion}"
-//                    }
-//                }
-//            }
-//        }
-
-
         stage("Docker build & publish") {
             steps {
                 container('docker') {
