@@ -32,6 +32,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+        "encoding/json"
 
 	"github.com/Shopify/sarama"
 	yaml "gopkg.in/yaml.v2"
@@ -148,10 +149,31 @@ func (k *KafkaSarama) inputMsg(topic string, mCh chan []byte, ec *uint64) {
 			break
 		}
 
+		var dataMap map[string]interface{}
+                err := json.Unmarshal(msg, &dataMap)
+                if err != nil {
+		    k.logger.Printf("Unmarshal msg cannot be executed") 	
+                    continue
+                }		
+                colTimeValue, ok := dataMap["ColTime"]
+                if !ok {
+		    k.logger.Printf("The dataMap does not contain key ColTime") 	
+                    continue
+                }		
+		colTimeFloat, ok := colTimeValue.(float64)
+                if !ok {
+		    k.logger.Printf("The value ColTime cannot be converted to float64") 	
+                    continue
+                }
+                ts_s := int64(colTimeFloat)
+                ts_ms := ts_s * 1000
+                ts_ns := (ts_ms % 1000) * 1000000
+
 		select {
 		case k.producer.Input() <- &sarama.ProducerMessage{
 			Topic: topic,
 			Value: sarama.ByteEncoder(msg),
+			Timestamp: time.Unix(ts_s, ts_ns),
 		}:
 		case err := <-k.producer.Errors():
 			k.logger.Println(err)

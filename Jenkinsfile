@@ -1,78 +1,88 @@
-
 pipeline {
-    agent any
+    agent {
+      kubernetes {
+        defaultContainer 'golang'
+        yaml '''
+  kind: Pod
+  spec:
+    containers:
+    - name: golang
+      image: golang:1.16.15
+      imagePullPolicy: Always
+      command:
+      - sleep
+      args:
+      - 99d
+    - name: docker
+      image: docker:20.10.13
+      imagePullPolicy: Always
+      securityContext:
+        privileged: true
+        runAsUser: 0
+      command:
+      - sleep
+      args:
+      - 99d
+      volumeMounts:
+      - name: docker-sock
+        mountPath: /var/run/docker.sock
+      - name: docker-config
+        mountPath: /etc/docker
+    volumes:
+    - name: docker-sock
+      hostPath:
+        path: /var/run/docker.sock
+        type: Socket
+    - name: docker-config
+      hostPath:
+        path: /etc/docker
+  '''
+      }
+    }
+    
+    options {
+        ansiColor('xterm')
+    }
+
     environment {
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
-        DOCKER_REPOSITORY = "docker.fg"
-        GIT_VERSION=sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
     }
 
     stages {
-
-        stage ("Preparing container for golang")  {
-            agent {
-                docker {
-                    image "golang"
-                }
-            }
-
-            stages {
-                stage ("Unit testing") {
-                    steps {
-                        echo "Unit testing..."
-                        sh "go build ./..."
-                        sh "go install ./..."
-                        sh "go test -v ./... -timeout 1m"
-                    }
-                }
-            }
-        }
-
-        stage ("Code quality") {
+        stage ("Building and testing") {
             steps {
-                echo("Checking code quality....")
                 script {
-                    def scannerHome = tool 'Sonar Scanner 3.0.0.702';
-                    withSonarQubeEnv {
-                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectVersion=$GIT_VERSION"
-                    }
+                        bn = env.BUILD_NUMBER
+                        sh "git config --global --add safe.directory '*'"
+                        gitVersion = sh(script: 'git describe --tags --always', returnStdout: true).toString().trim()
+                        currentBuild.displayName = "#${bn}:${gitVersion}"
                 }
+                echo "Build code..."
+                sh "go build ./..."
+                sh "go install ./..."
+                echo "Unit testing..."
+                sh "go test -v ./... -timeout 1m"
             }
         }
-
 
         stage("Docker build & publish") {
             steps {
-                script {
-                    dockerImage = docker.build "$DOCKER_REPOSITORY/fg_vflow"
+                container('docker') {
+                    script {
+                        dockerImage = docker.build "docker.fg/fg_vflow"
 
-                    bn = env.BUILD_NUMBER
-                    currentBuild.displayName = "#${bn}:$GIT_VERSION"
-
-                    dockerImage.push("$GIT_VERSION")
-                    if (env.BRANCH_NAME == "devel") {
-                        dockerImage.push("devel")
+                        bn = env.BUILD_NUMBER
+                        currentBuild.displayName = "#${bn}:${gitVersion}"
+                        if (env.BRANCH_NAME == "devel") {
+                            dockerImage.push("devel")
+                        } else {
+                            dockerImage.push(gitVersion)
+                        }
                     }
                 }
             }
         }
 
-        stage ("Devel deploy") {
-            when { branch "devel" }
-            steps {
-                salt(authtype: 'pam',
-                    clientInterface: local(arguments: 'node.rtbh', blockbuild: true, function: 'state.apply', jobPollTime: 6, target: 'node-1.bohdalec.test.fg', targettype: 'glob'),
-                    credentialsId: '3f36bac7-b50e-42f2-b977-19e352fbd3c7',
-                    saveFile: true,
-                    servername: 'https://salt.test.fg:8000/')
-                script {
-                    env.WORKSPACE = pwd()
-                    def output = readFile "${env.WORKSPACE}/saltOutput.json"
-                    echo output
-                    echo "Done..."
-                }
-            }
-        }
     }
 
     post {
