@@ -152,21 +152,25 @@ func (k *KafkaSarama) inputMsg(topic string, mCh chan []byte, ec *uint64) {
 		var dataMap map[string]interface{}
                 err := json.Unmarshal(msg, &dataMap)
                 if err != nil {
-                    // chyba
+		    k.logger.Printf("Unmarshal msg cannot be executed") 	
+                    continue
                 }		
                 colTimeValue, ok := dataMap["ColTime"]
                 if !ok {
-                    // chyba
+		    k.logger.Printf("The dataMap does not contain key ColTime") 	
+                    continue
                 }		
 		colTimeFloat, ok := colTimeValue.(float64)
                 if !ok {
-                    // chyba
+		    k.logger.Printf("The value ColTime cannot be converted to float64") 	
+                    continue
                 }
                 timestampSecs := uint64(colTimeFloat)
                 timestampMillis := int64(timestampSecs) * 1000
                 tssec := timestampMillis / 1000
                 tsnsec := (timestampMillis % 1000) * 1000000	
-		k.logger.Printf("!!!!!!!!: ColTime: %d\n , %v",timestampMillis,time.Unix(tssec, tsnsec))
+		//k.logger.Printf("!!!!!!!!: ColTime: %d\n , %v",timestampMillis,time.Unix(tssec, tsnsec))
+                k.logger.Printf("!!!!!!!!: ColTime: %d\n , %v",timestampMillis,time.Unix(0, timestampMillis*int64(time.Millisecond)))
 
 		select {
 		case k.producer.Input() <- &sarama.ProducerMessage{
