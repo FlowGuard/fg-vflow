@@ -168,7 +168,6 @@ func (k *KafkaSarama) inputMsg(topic string, mCh chan []byte, ec *uint64) {
                 ts_s := int64(colTimeFloat)
                 ts_ms := ts_s * 1000
                 ts_ns := (ts_ms % 1000) * 1000000
-		k.logger.Printf("!!!!!!!!: ColTime: %d\n , %v",ts_ms,time.Unix(ts_s, ts_ns))
 
 		select {
 		case k.producer.Input() <- &sarama.ProducerMessage{
